@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de cabeçalhos HTTP</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; color: #24202a; background: #f5f2f7; }
+    body { max-width: 900px; margin: 0 auto; padding: 32px 16px; }
+    h1 { margin-bottom: 8px; }
+    .summary { color: #544c5f; }
+    .notice { padding: 12px 16px; background: #fff; border-left: 4px solid #7353ba; border-radius: 6px; }
+    .table-wrap { overflow-x: auto; margin-top: 24px; background: #fff; border-radius: 12px; box-shadow: 0 4px 16px #24202a14; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 14px 16px; border-bottom: 1px solid #e8e4ed; vertical-align: top; }
+    thead th { background: #f0edf5; }
+    tbody th { font-family: ui-monospace, monospace; font-size: 13px; }
+    .badge { display: inline-block; padding: 4px 9px; border-radius: 999px; font-size: 13px; font-weight: 650; }
+    .present { color: #17613a; background: #dcf4e5; }
+    .missing { color: #873334; background: #fde4e2; }
+    footer { margin-top: 20px; color: #625c69; font-size: 14px; }
+    @media (max-width: 600px) { th, td { padding: 10px 8px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Verificação de cabeçalhos HTTP</h1>
+    <p class="summary">3 de 6 cabeçalhos recomendados encontrados</p>
+    <p class="notice">Relatório gerado a partir de dados simulados locais. Nenhum site foi acessado.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Cabeçalho</th><th scope="col">Resultado</th><th scope="col">Descrição</th></tr></thead>
+        <tbody><tr><th scope="row">Content-Security-Policy</th><td><span class="badge present">Presente</span></td><td>Restringe as origens de conteúdo que o navegador pode carregar.</td></tr><tr><th scope="row">Permissions-Policy</th><td><span class="badge missing">Ausente</span></td><td>Controla o acesso da página a recursos do navegador.</td></tr><tr><th scope="row">Referrer-Policy</th><td><span class="badge present">Presente</span></td><td>Controla quais informações de referência são compartilhadas.</td></tr><tr><th scope="row">Strict-Transport-Security</th><td><span class="badge missing">Ausente</span></td><td>Instrui o navegador a usar HTTPS em conexões futuras.</td></tr><tr><th scope="row">X-Content-Type-Options</th><td><span class="badge present">Presente</span></td><td>Ajuda a impedir a interpretação incorreta do tipo de conteúdo.</td></tr><tr><th scope="row">X-Frame-Options</th><td><span class="badge missing">Ausente</span></td><td>Controla se a página pode ser carregada em frames.</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+  <footer>Este relatório é educativo; a presença de um cabeçalho não garante, por si só, a segurança do sistema.</footer>
+</body>
+</html>

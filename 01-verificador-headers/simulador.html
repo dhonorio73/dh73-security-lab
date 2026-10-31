@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10172a">
+  <meta name="description" content="Ferramenta educativa para análise básica de cabeçalhos HTTP fornecidos pelo usuário. Processamento local; não consulta sites nem substitui uma auditoria.">
+  <title>Dh73 Security Lab | Análise educativa de cabeçalhos HTTP</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+      color: #182238;
+      background: #f3f6fb;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --ink: #182238;
+      --muted: #64708a;
+      --line: #e2e8f1;
+      --purple: #6747d3;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+    }
+
+    body {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 28px 36px;
+    }
+
+    .topbar,
+    .brand,
+    .hero-meta,
+    .section-heading,
+    .report-meta {
+      display: flex;
+      align-items: center;
+    }
+
+    .topbar {
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 34px;
+    }
+
+    .brand {
+      gap: 12px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(145deg, #3983e8, #164aa2);
+      border-radius: 13px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -.06em;
+      box-shadow: 0 7px 18px #2463bd33;
+    }
+
+    .brand-copy strong,
+    .brand-copy small {
+      display: block;
+    }
+
+    .brand-copy strong {
+      font-size: 14px;
+      letter-spacing: .01em;
+    }
+
+    .brand-copy small {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .offline-pill,
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .offline-pill {
+      padding: 9px 12px;
+      color: #18764b;
+      background: #e7f7ee;
+      border: 1px solid #c8ecd6;
+      border-radius: 999px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: #25a665;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px #25a6651f;
+    }
+
+    .hero {
+      max-width: 780px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      color: var(--purple);
+    }
+
+    h1 {
+      margin: 10px 0;
+      font-size: clamp(30px, 4vw, 44px);
+      line-height: 1.12;
+      letter-spacing: -.045em;
+    }
+
+    .intro {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin: 0 0 20px;
+      padding: 15px 18px;
+      color: #32415c;
+      background: #eef3ff;
+      border: 1px solid #dce6ff;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .notice-icon {
+      flex: 0 0 auto;
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      color: #fff;
+      background: #5574cc;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .demo-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 0 0 20px;
+    }
+
+    button {
+      min-height: 42px;
+      padding: 9px 14px;
+      color: #36435c;
+      background: #fff;
+      border: 1px solid #dce3ed;
+      border-radius: 9px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+
+    button:hover {
+      background: #f8f9fc;
+      border-color: #b7c3d6;
+      transform: translateY(-1px);
+    }
+
+    button:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid #8a73eb;
+      outline-offset: 3px;
+    }
+
+    .print-button {
+      margin-left: auto;
+      color: #fff;
+      background: #6042c5;
+      border-color: #6042c5;
+    }
+
+    .print-button:hover {
+      color: #fff;
+      background: #4e33aa;
+      border-color: #4e33aa;
+    }
+
+    .file-picker,
+    .analyze-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 11px;
+      color: #36435c;
+      background: #fff;
+      border: 1px solid #dce3ed;
+      border-radius: 8px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .file-picker:hover,
+    .analyze-button:hover:not(:disabled) {
+      background: #f8f9fc;
+      border-color: #b7c3d6;
+    }
+
+    .analyze-button {
+      color: #fff;
+      background: #2463bd;
+      border-color: #2463bd;
+    }
+
+    .analyze-button:hover:not(:disabled) {
+      color: #fff;
+      background: #184f9f;
+      border-color: #184f9f;
+    }
+
+    .analyze-button:disabled {
+      color: #8590a3;
+      background: #eef1f5;
+      border-color: #e3e7ed;
+      cursor: not-allowed;
+    }
+
+    .file-picker:focus-within,
+    .analyze-button:focus-visible {
+      outline: 3px solid #8a73eb;
+      outline-offset: 3px;
+    }
+
+    .entry-note {
+      margin: 0 0 14px;
+      color: #68758c;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .file-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 14px;
+    }
+
+    .file-picker input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      clip-path: inset(50%);
+    }
+
+    .file-status {
+      color: #68758c;
+      font-size: 11px;
+    }
+
+    .authorization-form {
+      display: grid;
+      gap: 11px;
+      margin-top: 16px;
+      padding-top: 15px;
+      border-top: 1px solid #edf0f5;
+    }
+
+    .authorization-title {
+      margin: 0;
+      color: #33415b;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 5px;
+      color: #59667d;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .context-input {
+      width: 100%;
+      min-height: 36px;
+      padding: 8px 9px;
+      color: #26334c;
+      background: #fff;
+      border: 1px solid #dce3ed;
+      border-radius: 7px;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .context-input:focus-visible {
+      outline: 3px solid #8a73eb;
+      outline-offset: 2px;
+    }
+
+    .consent-check {
+      display: grid;
+      grid-template-columns: 17px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      color: #4e5b72;
+      font-size: 11px;
+      line-height: 1.5;
+      cursor: pointer;
+    }
+
+    .consent-check input {
+      width: 16px;
+      height: 16px;
+      margin: 1px 0 0;
+      accent-color: #2463bd;
+    }
+
+    .authorization-note {
+      margin: -4px 0 0;
+      color: #78839a;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .scope-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .scope-summary[hidden] {
+      display: none;
+    }
+
+    .scope-item {
+      min-width: 0;
+      padding: 9px 10px;
+      background: #f5f8fd;
+      border: 1px solid #e6edf7;
+      border-radius: 8px;
+    }
+
+    .scope-item dt {
+      color: #758198;
+      font-size: 9px;
+      font-weight: 750;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .scope-item dd {
+      margin: 4px 0 0;
+      color: #33415b;
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(300px, .82fr) minmax(0, 1.5fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 22px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 8px 26px #1f31500a;
+    }
+
+    .section-heading {
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: -.02em;
+    }
+
+    .sample-tag {
+      padding: 5px 8px;
+      color: #69758b;
+      background: #f2f4f8;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #4a5871;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 390px;
+      padding: 15px;
+      color: #e8e9f2;
+      background: #151a2a;
+      border: 1px solid #292f43;
+      border-radius: 10px;
+      font: 12px/1.7 "Cascadia Code", Consolas, monospace;
+      resize: vertical;
+      tab-size: 2;
+    }
+
+    .error {
+      min-height: 18px;
+      margin: 9px 0 0;
+      color: #b42332;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .results-panel {
+      padding: 22px;
+    }
+
+    .report-meta {
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .summary {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .metric {
+      padding: 13px 14px;
+      background: #f8f9fc;
+      border: 1px solid #edf0f5;
+      border-radius: 11px;
+    }
+
+    .metric-label {
+      display: block;
+      color: #69758b;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      display: block;
+      margin-top: 5px;
+      color: var(--ink);
+      font-size: 23px;
+      font-weight: 750;
+      letter-spacing: -.04em;
+    }
+
+    .metric-good .metric-value { color: #16804d; }
+    .metric-review .metric-value { color: #a76b00; }
+    .metric-missing .metric-value { color: #b42332; }
+
+    .analysis-note {
+      margin: 0 0 12px;
+      color: #79849a;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .header-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .header-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 13px 14px;
+      background: #fbfcfe;
+      border: 1px solid #e9edf4;
+      border-radius: 10px;
+      break-inside: avoid;
+    }
+
+    .header-name {
+      color: #283650;
+      overflow-wrap: anywhere;
+      font: 600 12px "Cascadia Code", Consolas, monospace;
+    }
+
+    .description {
+      margin: 5px 0 0;
+      color: #68758c;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .badge {
+      max-width: 155px;
+      padding: 6px 9px;
+      border-radius: 7px;
+      font-size: 10px;
+      font-weight: 750;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .present {
+      color: #167747;
+      background: #e5f6ec;
+    }
+
+    .missing {
+      color: #ab2d3b;
+      background: #fdebed;
+    }
+
+    .review {
+      color: #8a5a00;
+      background: #fff3d4;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 22px;
+      padding: 15px 2px 0;
+      color: #778198;
+      border-top: 1px solid var(--line);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    footer p {
+      margin: 0;
+    }
+
+    @media (max-width: 850px) {
+      body { padding: 20px 18px 30px; }
+      .workspace { grid-template-columns: 1fr; }
+      textarea { min-height: 270px; }
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 16px 12px 24px; }
+      .topbar { margin-bottom: 26px; }
+      .offline-pill { padding: 8px; font-size: 9px; }
+      .brand-copy small { display: none; }
+      .panel { padding: 16px; }
+      .results-panel { padding: 17px; }
+      .metrics { gap: 6px; }
+      .metric { padding: 10px 8px; }
+      .metric-label { font-size: 8px; }
+      .metric-value { font-size: 20px; }
+      .header-row { grid-template-columns: 1fr; gap: 8px; }
+      .badge { justify-self: start; max-width: none; }
+      .print-button { margin-left: 0; }
+      footer { flex-direction: column; }
+      .scope-summary { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      :root { background: #fff; }
+      body { max-width: none; padding: 0; }
+      .topbar { margin-bottom: 20px; }
+      .demo-controls, #response-panel, .notice { display: none !important; }
+      .hero { margin-bottom: 12px; }
+      .workspace { display: block; }
+      .panel, .results-panel { padding: 0; border: 0; box-shadow: none; }
+      .header-row { background: #fff; }
+      footer { margin-top: 18px; }
+      * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="topbar">
+      <div class="brand" aria-label="DV Security Lab">
+        <span class="brand-mark" aria-hidden="true">Dh73</span>
+        <span class="brand-copy">
+          <strong>DV Security Lab</strong>
+          <small>Laboratório de segurança web</small>
+        </span>
+      </div>
+      <span class="offline-pill"><span class="status-dot" aria-hidden="true"></span> Processamento local</span>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <span class="eyebrow">Diagnóstico de segurança</span>
+      <h1 id="page-title">Análise básica de cabeçalhos HTTP</h1>
+      <p class="intro">Ferramenta educativa para analisar cabeçalhos fornecidos pelo usuário, com observações e pontos para revisão.</p>
+    </section>
+
+    <p class="notice">
+      <span class="notice-icon" aria-hidden="true">i</span>
+      <span><strong>Sem sondagem de domínios.</strong> A ferramenta só analisa JSON que você selecionar ou colar. Os dados são processados neste navegador; não há envio ou requisição de rede.</span>
+    </p>
+
+    <nav class="demo-controls" aria-label="Ações da demonstração">
+      <button id="partial-example" type="button">Exemplo com lacunas (2/6)</button>
+      <button id="all-example" type="button">Todos os nomes presentes (6/6)</button>
+      <button id="weak-example" type="button">Exemplo com valores para revisar</button>
+      <label class="file-picker" for="response-file">Importar JSON local
+        <input id="response-file" type="file" accept=".json,application/json">
+      </label>
+      <button id="print-report" class="print-button" type="button">Exportar relatório PDF</button>
+    </nav>
+
+    <div class="workspace">
+      <section id="response-panel" class="panel" aria-labelledby="json-label">
+        <div class="section-heading">
+          <h2 id="json-label">Dados de entrada</h2>
+          <span id="input-mode" class="sample-tag">Cenário demonstrativo</span>
+        </div>
+        <p class="entry-note">Importe ou cole a captura de cabeçalhos. Use somente dados necessários; remova cookies, tokens e informações pessoais antes da análise.</p>
+        <div class="file-row">
+          <span id="file-status" class="file-status">Nenhum arquivo importado.</span>
+        </div>
+        <label for="response-json">Resposta HTTP em JSON</label>
+        <textarea id="response-json" spellcheck="false" aria-describedby="json-error">{
+  "status": 200,
+  "headers": {
+    "Content-Type": "text/html; charset=utf-8",
+    "Content-Security-Policy": "default-src 'self'",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin"
+  }
+}</textarea>
+        <p id="json-error" class="error" role="alert" aria-live="polite"></p>
+        <form id="authorization-form" class="authorization-form" novalidate>
+          <h3 class="authorization-title">Escopo e autorização</h3>
+          <div>
+            <label class="field-label" for="project-name">Cliente / projeto (opcional)</label>
+            <input id="project-name" class="context-input" type="text" maxlength="100" autocomplete="off">
+          </div>
+          <div>
+            <label class="field-label" for="asset-id">Ativo autorizado (obrigatório)</label>
+            <input id="asset-id" class="context-input" type="text" maxlength="160" autocomplete="off" placeholder="Identificador acordado, sem consultar o domínio">
+          </div>
+          <div>
+            <label class="field-label" for="authorization-ref">Referência da autorização (obrigatória)</label>
+            <input id="authorization-ref" class="context-input" type="text" maxlength="100" autocomplete="off" placeholder="Contrato, chamado ou registro interno">
+          </div>
+          <label class="consent-check" for="authorization-confirmed">
+            <input id="authorization-confirmed" type="checkbox">
+            <span>Confirmo que a autorização está vigente, cobre este ativo e permite analisar os cabeçalhos fornecidos.</span>
+          </label>
+          <p class="authorization-note">A confirmação é uma declaração do operador, não valida nem substitui o documento de autorização. Esta versão não contata o ativo.</p>
+          <button id="analyze-submitted" class="analyze-button" type="submit" disabled>Analisar dados autorizados</button>
+        </form>
+      </section>
+
+      <section class="panel results-panel" aria-labelledby="results-title" aria-live="polite">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Análise de segurança</span>
+            <h2 id="results-title">Resumo executivo</h2>
+          </div>
+          <div class="report-meta">
+            <span id="scenario-name">Exemplo inicial</span>
+            <span aria-hidden="true">·</span>
+            <time id="report-date"></time>
+          </div>
+        </div>
+        <p id="summary" class="summary" role="status" aria-live="polite"></p>
+        <p id="report-source" class="analysis-note">Fonte: cenário fictício; a ferramenta não acessou nenhum ativo.</p>
+        <dl id="scope-summary" class="scope-summary" hidden>
+          <div class="scope-item"><dt>Cliente / projeto</dt><dd id="report-project"></dd></div>
+          <div class="scope-item"><dt>Ativo declarado</dt><dd id="report-asset"></dd></div>
+          <div class="scope-item"><dt>Referência de autorização</dt><dd id="report-authorization"></dd></div>
+        </dl>
+        <div class="metrics" aria-label="Contagem dos resultados">
+          <div class="metric metric-good">
+            <span class="metric-label">Adequados*</span>
+            <strong id="adequate-count" class="metric-value">0</strong>
+          </div>
+          <div class="metric metric-review">
+            <span class="metric-label">Revisar</span>
+            <strong id="review-count" class="metric-value">0</strong>
+          </div>
+          <div class="metric metric-missing">
+            <span class="metric-label">Ausentes</span>
+            <strong id="missing-count" class="metric-value">0</strong>
+          </div>
+        </div>
+        <p class="analysis-note">*Adequação básica não substitui validação técnica no contexto da aplicação. CSP exige revisão manual.</p>
+        <ul id="header-list" class="header-list"></ul>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>Processamento local · Análise limitada · Não constitui auditoria ou garantia de segurança.</p>
+    <p>Criado por Douglas Honório.</p>
+  </footer>
+
+  <script>
+    const recommendedHeaders = {
+      "content-security-policy": {
+        label: "Content-Security-Policy",
+        description: "Restringe as origens de conteúdo que o navegador pode carregar.",
+      },
+      "strict-transport-security": {
+        label: "Strict-Transport-Security",
+        description: "Instrui o navegador a usar HTTPS em conexões futuras.",
+      },
+      "x-content-type-options": {
+        label: "X-Content-Type-Options",
+        description: "Ajuda a impedir a interpretação incorreta do tipo de conteúdo.",
+      },
+      "x-frame-options": {
+        label: "X-Frame-Options",
+        description: "Controla se a página pode ser carregada em frames.",
+      },
+      "referrer-policy": {
+        label: "Referrer-Policy",
+        description: "Controla quais informações de referência são compartilhadas.",
+      },
+      "permissions-policy": {
+        label: "Permissions-Policy",
+        description: "Controla o acesso da página a recursos do navegador.",
+      },
+    };
+
+    const responseInput = document.querySelector("#response-json");
+    const errorOutput = document.querySelector("#json-error");
+    const summaryOutput = document.querySelector("#summary");
+    const headerList = document.querySelector("#header-list");
+    const scenarioName = document.querySelector("#scenario-name");
+    const countsOutput = {
+      adequate: document.querySelector("#adequate-count"),
+      review: document.querySelector("#review-count"),
+      missing: document.querySelector("#missing-count"),
+    };
+    const inputMode = document.querySelector("#input-mode");
+    const fileInput = document.querySelector("#response-file");
+    const fileStatus = document.querySelector("#file-status");
+    const authorizationForm = document.querySelector("#authorization-form");
+    const projectName = document.querySelector("#project-name");
+    const assetId = document.querySelector("#asset-id");
+    const authorizationRef = document.querySelector("#authorization-ref");
+    const authorizationConfirmed = document.querySelector("#authorization-confirmed");
+    const analyzeButton = document.querySelector("#analyze-submitted");
+    const scopeSummary = document.querySelector("#scope-summary");
+    let activeMode = "demo";
+    const maxInputBytes = 1024 * 1024;
+    document.querySelector("#report-date").textContent =
+      new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(new Date());
+    const partialExample = {
+      status: 200,
+      headers: {
+        "X-Frame-Options": "DENY",
+        "Permissions-Policy": "camera=()",
+      },
+    };
+    const allExample = {
+      status: 200,
+      headers: {
+        "Content-Security-Policy": "default-src 'self'",
+        "Strict-Transport-Security": "max-age=31536000",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=()",
+      },
+    };
+    const weakExample = {
+      status: 200,
+      headers: {
+        "Content-Security-Policy": "default-src * 'unsafe-inline' 'unsafe-eval'",
+        "Strict-Transport-Security": "max-age=3600",
+        "X-Content-Type-Options": "off",
+        "X-Frame-Options": "ALLOW-FROM https://example.com",
+        "Referrer-Policy": "unsafe-url",
+        "Permissions-Policy": "camera=*, microphone=(invalid)",
+      },
+    };
+
+    function loadExample(example, label) {
+      resetAuthorizationContext();
+      responseInput.value = JSON.stringify(example, null, 2);
+      activeMode = "demo";
+      scenarioName.textContent = label;
+      inputMode.textContent = "Cenário demonstrativo";
+      fileStatus.textContent = "Cenário fictício carregado.";
+      document.querySelector("#report-source").textContent =
+        "Fonte: cenário fictício; a ferramenta não acessou nenhum ativo.";
+      scopeSummary.hidden = true;
+      errorOutput.textContent = "";
+      updateAuthorizationState();
+      renderResults();
+    }
+
+    function resetAuthorizationContext() {
+      projectName.value = "";
+      assetId.value = "";
+      authorizationRef.value = "";
+      authorizationConfirmed.checked = false;
+      scopeSummary.hidden = true;
+      for (const id of ["report-project", "report-asset", "report-authorization"]) {
+        document.querySelector(`#${id}`).textContent = "";
+      }
+    }
+
+    function updateAuthorizationState() {
+      analyzeButton.disabled = !(
+        responseInput.value.trim() &&
+        assetId.value.trim() &&
+        authorizationRef.value.trim() &&
+        authorizationConfirmed.checked
+      );
+    }
+
+    function setPendingAnalysis(message) {
+      activeMode = "pending";
+      inputMode.textContent = "Aguardando escopo";
+      scenarioName.textContent = "Aguardando autorização";
+      scopeSummary.hidden = true;
+      summaryOutput.textContent = message;
+      document.querySelector("#report-source").textContent =
+        "Análise pendente. Nenhum resultado válido foi gerado.";
+      errorOutput.textContent = "";
+      for (const count of Object.values(countsOutput)) {
+        count.textContent = "—";
+      }
+      headerList.replaceChildren();
+      updateAuthorizationState();
+    }
+
+    function inputByteLength(value) {
+      return new TextEncoder().encode(value).length;
+    }
+
+    function showInvalidInput(message) {
+      errorOutput.textContent = message;
+      summaryOutput.textContent = "Corrija os dados de entrada para gerar o resumo.";
+      for (const count of Object.values(countsOutput)) {
+        count.textContent = "—";
+      }
+      headerList.replaceChildren();
+    }
+
+    function evaluateValue(header, value) {
+      if (typeof value !== "string" || !value.trim()) {
+        return {
+          status: "Revisar",
+          className: "review",
+          guidance: "O valor está vazio ou não é texto; informe um valor válido para este cabeçalho.",
+        };
+      }
+
+      const normalized = value.trim().toLowerCase();
+      if (header === "content-security-policy") {
+        const warnings = [];
+        if (!/(?:^|;)\s*default-src(?:\s|;|$)/i.test(value)) {
+          warnings.push("não foi identificada a diretiva default-src");
+        }
+        if (/(?:^|\s)\*(?:\s|;|$)/.test(value)) {
+          warnings.push("há uma origem curinga (*)");
+        }
+        if (/'unsafe-(?:inline|eval)'/i.test(value)) {
+          warnings.push("há uma diretiva unsafe-inline ou unsafe-eval");
+        }
+        return {
+          status: warnings.length ? "Revisar" : "Revisão manual",
+          className: "review",
+          guidance: warnings.length
+            ? `${warnings.join("; ")}. Restrinja as fontes conforme os recursos necessários.`
+            : "A diretiva default-src foi identificada sem alertas básicos; revise todas as fontes e exceções conforme a aplicação.",
+        };
+      }
+
+      if (header === "strict-transport-security") {
+        const maxAge = normalized.match(/(?:^|;)\s*max-age\s*=\s*(\d+)\s*(?:;|$)/);
+        if (!maxAge || Number(maxAge[1]) < 31536000) {
+          return {
+            status: "Revisar",
+            className: "review",
+            guidance: "Informe max-age de pelo menos 31536000 segundos (um ano), após confirmar que o site e seus subdomínios necessários usam HTTPS.",
+          };
+        }
+        return {
+          status: "Adequado (básico)",
+          className: "present",
+          guidance: "max-age é de pelo menos um ano. Confirme HTTPS em todo o escopo antes de aplicar em produção.",
+        };
+      }
+
+      if (header === "x-content-type-options") {
+        return normalized === "nosniff"
+          ? {
+              status: "Adequado (básico)",
+              className: "present",
+              guidance: "O valor nosniff corresponde à configuração esperada.",
+            }
+          : {
+              status: "Revisar",
+              className: "review",
+              guidance: "Use nosniff como valor deste cabeçalho.",
+            };
+      }
+
+      if (header === "x-frame-options") {
+        return ["deny", "sameorigin"].includes(normalized)
+          ? {
+              status: "Adequado (básico)",
+              className: "present",
+              guidance: "O valor é reconhecido. Confirme se a política permite a integração legítima da página em frames.",
+            }
+          : {
+              status: "Revisar",
+              className: "review",
+              guidance: "Use DENY ou SAMEORIGIN; ALLOW-FROM não é suportado pelos navegadores modernos.",
+            };
+      }
+
+      if (header === "referrer-policy") {
+        const allowedPolicies = new Set([
+          "no-referrer",
+          "no-referrer-when-downgrade",
+          "origin",
+          "origin-when-cross-origin",
+          "same-origin",
+          "strict-origin",
+          "strict-origin-when-cross-origin",
+          "unsafe-url",
+        ]);
+        const policies = normalized.split(",").map((policy) => policy.trim()).filter(Boolean);
+        const effectivePolicy = policies[policies.length - 1];
+        if (!effectivePolicy || !allowedPolicies.has(effectivePolicy)) {
+          return {
+            status: "Revisar",
+            className: "review",
+            guidance: "Informe uma política reconhecida, como strict-origin-when-cross-origin ou no-referrer.",
+          };
+        }
+        if (["unsafe-url", "no-referrer-when-downgrade"].includes(effectivePolicy)) {
+          return {
+            status: "Revisar",
+            className: "review",
+            guidance: `A política ${effectivePolicy} pode expor mais informações de referência; avalie strict-origin-when-cross-origin ou no-referrer.`,
+          };
+        }
+        return {
+          status: "Adequado (básico)",
+          className: "present",
+          guidance: `A política ${effectivePolicy} é reconhecida; confirme que atende aos requisitos de privacidade do produto.`,
+        };
+      }
+
+      if (header === "permissions-policy") {
+        const directives = value.split(",");
+        const validDirective = /^[a-z][a-z0-9-]*\s*=\s*\(\s*(?:\*|self|src|"[^"]+")?(?:\s+(?:\*|self|src|"[^"]+"))*\s*\)$/i;
+        if (!directives.length || directives.some((directive) => !validDirective.test(directive.trim()))) {
+          return {
+            status: "Revisar",
+            className: "review",
+            guidance: "Revise a sintaxe das diretivas (por exemplo, camera=() para bloquear câmera). A verificação não confirma se os recursos listados são válidos.",
+          };
+        }
+        return {
+          status: "Formato básico válido",
+          className: "present",
+          guidance: "A sintaxe básica foi reconhecida; confira se as permissões e origens atendem ao necessário.",
+        };
+      }
+
+      return {
+        status: "Revisão manual",
+        className: "review",
+        guidance: "Este cabeçalho não possui uma validação automática de valor neste simulador.",
+      };
+    }
+
+    function renderResults() {
+      let response;
+      try {
+        response = JSON.parse(responseInput.value);
+      } catch (error) {
+        showInvalidInput(`JSON inválido: ${error.message}`);
+        scenarioName.textContent = "Entrada inválida";
+        return;
+      }
+
+      if (!response || typeof response !== "object" || Array.isArray(response)) {
+        showInvalidInput("A raiz do JSON deve ser um objeto.");
+        scenarioName.textContent = "Entrada inválida";
+        return;
+      }
+
+      if (!response.headers || typeof response.headers !== "object" || Array.isArray(response.headers)) {
+        showInvalidInput("O campo 'headers' deve ser um objeto JSON.");
+        scenarioName.textContent = "Entrada inválida";
+        return;
+      }
+      errorOutput.textContent = "";
+      const counts = { adequate: 0, review: 0, missing: 0 };
+      headerList.replaceChildren();
+
+      for (const [header, details] of Object.entries(recommendedHeaders)) {
+        const headerEntry = Object.entries(response.headers)
+          .find(([name]) => name.trim().toLowerCase() === header);
+        const evaluation = headerEntry
+          ? evaluateValue(header, headerEntry[1])
+          : {
+              status: "Ausente",
+              className: "missing",
+              guidance: "Adicione o cabeçalho se ele for adequado à arquitetura e aos requisitos da aplicação.",
+            };
+        if (!headerEntry) {
+          counts.missing += 1;
+        } else if (evaluation.className === "present") {
+          counts.adequate += 1;
+        } else {
+          counts.review += 1;
+        }
+        const row = document.createElement("li");
+        row.className = "header-row";
+
+        const text = document.createElement("div");
+        const name = document.createElement("strong");
+        name.className = "header-name";
+        name.textContent = details.label;
+        const description = document.createElement("p");
+        description.className = "description";
+        description.textContent = details.description;
+        const guidance = document.createElement("p");
+        guidance.className = "description";
+        guidance.textContent = evaluation.guidance;
+        text.append(name, description, guidance);
+
+        const badge = document.createElement("span");
+        badge.className = `badge ${evaluation.className}`;
+        badge.textContent = evaluation.status;
+
+        row.append(text, badge);
+        headerList.append(row);
+      }
+      summaryOutput.textContent =
+        `${counts.adequate} com valor básico adequado, ${counts.review} para revisar e ` +
+        `${counts.missing} ausentes (de ${Object.keys(recommendedHeaders).length}).`;
+      for (const [key, output] of Object.entries(countsOutput)) {
+        output.textContent = counts[key];
+      }
+    }
+
+    responseInput.addEventListener("input", () => {
+      authorizationConfirmed.checked = false;
+      fileStatus.textContent = "JSON informado manualmente; análise pendente de autorização.";
+      inputMode.textContent = "Dados fornecidos";
+      setPendingAnalysis(
+        "Informe o ativo e a referência da autorização, confirme o escopo e clique em analisar.",
+      );
+    });
+    function invalidateCustomerReport() {
+      if (activeMode === "customer") {
+        authorizationConfirmed.checked = false;
+        setPendingAnalysis("Os dados do relatório mudaram. Confirme e execute novamente a análise.");
+      }
+      updateAuthorizationState();
+    }
+
+    for (const field of [projectName, assetId, authorizationRef]) {
+      field.addEventListener("input", invalidateCustomerReport);
+    }
+    authorizationConfirmed.addEventListener("change", invalidateCustomerReport);
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      authorizationConfirmed.checked = false;
+      responseInput.value = "";
+      setPendingAnalysis(
+        "Arquivo selecionado. Informe o ativo e a referência da autorização antes de analisar.",
+      );
+      if (!file.name.toLowerCase().endsWith(".json")) {
+        fileStatus.textContent = "Formato não aceito.";
+        errorOutput.textContent = "Selecione um arquivo .json exportado com os cabeçalhos.";
+        return;
+      }
+      if (file.size > maxInputBytes) {
+        fileStatus.textContent = "Arquivo acima do limite.";
+        errorOutput.textContent = "O limite de importação é 1 MB.";
+        return;
+      }
+      try {
+        responseInput.value = await file.text();
+      } catch (error) {
+        fileStatus.textContent = "Falha na leitura do arquivo.";
+        errorOutput.textContent = `Não foi possível ler o JSON local: ${error.message}`;
+        return;
+      }
+      fileStatus.textContent = "Arquivo lido localmente; aguardando escopo e autorização.";
+      inputMode.textContent = "Arquivo local";
+      updateAuthorizationState();
+    });
+    authorizationForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (!assetId.value.trim() || !authorizationRef.value.trim() || !authorizationConfirmed.checked) {
+        errorOutput.textContent = "Informe o ativo, a referência e confirme a autorização vigente.";
+        updateAuthorizationState();
+        return;
+      }
+      if (inputByteLength(responseInput.value) > maxInputBytes) {
+        errorOutput.textContent = "Os dados excedem o limite de 1 MB.";
+        return;
+      }
+      activeMode = "customer";
+      inputMode.textContent = "Dados autorizados";
+      scenarioName.textContent = "Cabeçalhos fornecidos pelo operador";
+      document.querySelector("#report-project").textContent = projectName.value.trim() || "Não informado";
+      document.querySelector("#report-asset").textContent = assetId.value.trim();
+      document.querySelector("#report-authorization").textContent = authorizationRef.value.trim();
+      document.querySelector("#report-source").textContent =
+        "Fonte: JSON fornecido pelo operador; a ferramenta não acessou o ativo.";
+      scopeSummary.hidden = false;
+      renderResults();
+    });
+    document.querySelector("#partial-example").addEventListener("click", () => {
+      loadExample(partialExample, "Exemplo com lacunas");
+    });
+    document.querySelector("#all-example").addEventListener("click", () => {
+      loadExample(allExample, "Nomes presentes");
+    });
+    document.querySelector("#weak-example").addEventListener("click", () => {
+      loadExample(weakExample, "Valores para revisar");
+    });
+    document.querySelector("#print-report").addEventListener("click", () => {
+      window.print();
+    });
+    updateAuthorizationState();
+    renderResults();
+  </script>
+</body>
+</html>
