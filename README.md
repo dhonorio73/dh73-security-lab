@@ -8,6 +8,12 @@ Interface local com resumo executivo, recomendações e exportação para PDF. T
 
 ![Captura do simulador local de cabeçalhos HTTP](./simulador-headers.png)
 
+## Comece por aqui
+
+1. Abra `01-verificador-headers/simulador.html` no navegador para experimentar cenários fictícios.
+2. Para executar o verificador Python, use o exemplo e o comando da seção **Executar**.
+3. Consulte **Rodar os testes** para validar o comportamento localmente.
+
 ## Tecnologias utilizadas
 
 - **Python 3.10+** — verificador de cabeçalhos e geração do relatório HTML usando a biblioteca padrão.
