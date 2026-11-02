@@ -4,6 +4,8 @@ Ferramenta educativa para análise básica de cabeçalhos HTTP fornecidos pelo u
 
 ## Demonstração do simulador
 
+[Abrir simulador online](https://dhonorio73.github.io/dh73-security-lab/01-verificador-headers/simulador.html) — análise demonstrativa com dados fictícios no navegador.
+
 Interface local com resumo executivo, recomendações e exportação para PDF. Todos os cenários usam dados fictícios:
 
 ![Captura do simulador local de cabeçalhos HTTP](./simulador-headers.png)
